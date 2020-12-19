@@ -20,3 +20,11 @@
 - step2: tail/512为top，表示取第几个spanSetBlock，取值: b.spine+sys.PtrSize*top；
 - step3: tail%512为bottom，表示单个spanSetBlock中，选择第几个slot;
 
+# spanSetBlockPool
+> spanSetBlockPool是一个lfstack，lfstack是一个链表结构的stack，每个元素为一个spanSetBlock;
+> 如果spanSetBlockPool为空，则调用persistentalloc去获取，该函数最终调用mmap系统调用从OS堆中获取；
+> 每次获取一个spanSetBlock，大小512*2^3约4KB的空间，共可存储512个mspan地址；
+## 操作
+> spanSetBlockPool有alloc和free两个操作；
+> alloc首先从spanSetBlockPool获取spanSetBlock，没有在从系统分配；
+> 回收时，会将spanSetBlock push到spanSetBlockPool中；
